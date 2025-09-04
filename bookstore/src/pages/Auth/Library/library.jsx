@@ -6,28 +6,41 @@ import { FaChevronRight, FaChevronDown } from "react-icons/fa6";
 import { MdBook } from "react-icons/md";
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
-import book1 from '../../../assets/book1.webp'
-import book2 from '../../../assets/book2.webp'
-import book3 from '../../../assets/book3.webp'
-import book4 from '../../../assets/book4.webp'
-
-let temp = [
-  { _id: "1", title: "The Great Gatsby", author: "F. Scott Fitzgerald", image: book1 },
-  { _id: "2", title: "To Kill a Mockingbird", author: "Harper Lee", image: book2 },
-  { _id: "3", title: "1984", author: "George Orwell", image: book3 },
-  { _id: "4", title: "Pride and Prejudice", author: "Jane Austen", image: book4 },
-];
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 function library() {
     const [show, setShow] = useState(false);
     const [allBooks, setAllBooks] = useState([]);
-    // const [loading, setLoading] = useState(true);
-    // const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-    setAllBooks(temp);
+        const fetchBooks = async () => {
+            try {
+                const response = await fetch(`${apiUrl}/api/books/all`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch books');
+                }
+                const data = await response.json();
+                setAllBooks(data);
+                setLoading(false);
+            }
+            catch (error) {
+                setError(error.message);
+                setLoading(false);
+            }
+        };
+        fetchBooks();
+
      }, []);
+
+        if (loading) {
+        return <p>Loading...</p>;
+    }
+    if (error) {
+        return <p>Error: {error}</p>;
+    }
  
    const location = useLocation();
 

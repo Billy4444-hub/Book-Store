@@ -4,32 +4,41 @@ import { useParams, useNavigate, useLocation, Outlet } from 'react-router-dom'
 import './page.css'
 import Navbar from '../../../components/Navbar'
 
-import book1 from '../../../assets/book1.webp'
-import book2 from '../../../assets/book2.webp'
-import book3 from '../../../assets/book3.webp'
-import book4 from '../../../assets/book4.webp'
-
-let temp = [
-  { _id: "1", title: "The Great Gatsby", author: "F. Scott Fitzgerald", image: book1 },
-  { _id: "2", title: "To Kill a Mockingbird", author: "Harper Lee", image: book2 },
-  { _id: "3", title: "1984", author: "George Orwell", image: book3 },
-  { _id: "4", title: "Pride and Prejudice", author: "Jane Austen", image: book4 },
-];
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 function page() {
 
   const navigate = useNavigate();
   const { bookid } = useParams();
   const [book, setBook] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const location = useLocation();
 
-  useEffect(() => {
-    const foundBook = temp.find((b) => b._id === bookid);
-    setBook(foundBook);
-    }, [bookid]);
+    useEffect(() => {
+        const fetchBookDetails = async () => {
+            try {
+                const response = await fetch(`${apiUrl}/api/books/${bookid}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch book details');
+                }
+                const data = await response.json();
+                setBook(data);
+                setLoading(false);
+            }
+            catch (error) {
+                setError(error.message);
+                setLoading(false);
+            }
+        };
+        fetchBookDetails();
+     }, []);
 
-    if (!book) {
-        return <div>Loading...</div>;
+        if (loading) {
+        return <p>Loading...</p>;
+    }
+    if (error) {
+        return <p>Error: {error}</p>;
     }
   
     if(location.pathname === `/book/${bookid}`){
