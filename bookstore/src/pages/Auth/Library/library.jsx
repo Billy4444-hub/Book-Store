@@ -13,6 +13,8 @@ function library() {
     const [allBooks, setAllBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const booksPerPage = 5;
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -43,6 +45,21 @@ function library() {
     }
  
    const location = useLocation();
+
+   //pagination logic
+   const indexOfLastBook = currentPage * booksPerPage;
+   const indexOfFirstBook = indexOfLastBook - booksPerPage;
+   const currentBooks = allBooks.slice(indexOfFirstBook, indexOfLastBook); // Books for the current page, Main logic
+   const totalPages = Math.ceil(allBooks.length / booksPerPage);
+
+    const handleNext = () => {
+        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    };
+
+    const handlePrev = () => {
+        if (currentPage > 1) setCurrentPage(currentPage - 1);
+    };
+
 
    if(location.pathname === '/library'){
      return (
@@ -82,7 +99,7 @@ function library() {
                 <div className= "right">
                     <h1>Trending</h1>
                     <div className= "books">
-                        {allBooks.map((book) => (
+                        {currentBooks.map((book) => (
                             <div
                                 onClick={() => navigate(`/book/${book._id}`)}
                                 key={book._id}
@@ -99,6 +116,11 @@ function library() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                    <div className= "pagination">
+                         <button className='page-btn' onClick={handlePrev} disabled={currentPage === 1}>Previous</button>
+                         <span>Page {currentPage} of {totalPages}</span>
+                        <button className='page-btn' onClick={handleNext} disabled={currentPage === totalPages}>Next</button>
                     </div>
                 </div>
             </div>
