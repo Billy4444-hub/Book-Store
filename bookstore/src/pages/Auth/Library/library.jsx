@@ -14,8 +14,14 @@ function library() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
     const booksPerPage = 5;
     const navigate = useNavigate();
+    const location = useLocation();
+
+    //  useEffect(() => {
+    //     setCurrentPage(1); // Reset to first page on search term change
+    // }, [searchTerm]);
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -34,23 +40,25 @@ function library() {
             }
         };
         fetchBooks();
-
      }, []);
 
-        if (loading) {
-        return <p>Loading...</p>;
-    }
-    if (error) {
-        return <p>Error: {error}</p>;
-    }
- 
-   const location = useLocation();
+    //Filter
+   const filteredBooks = searchTerm ? allBooks.filter(book =>
+      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchTerm.toLowerCase())
+   )
+   : allBooks;
 
-   //pagination logic
+    // Reset to first page on search term change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
+    //pagination logic
    const indexOfLastBook = currentPage * booksPerPage;
    const indexOfFirstBook = indexOfLastBook - booksPerPage;
-   const currentBooks = allBooks.slice(indexOfFirstBook, indexOfLastBook); // Books for the current page, Main logic
-   const totalPages = Math.ceil(allBooks.length / booksPerPage);
+   const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook); // Books for the current page, Main logic
+   const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
 
     const handleNext = () => {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -60,11 +68,17 @@ function library() {
         if (currentPage > 1) setCurrentPage(currentPage - 1);
     };
 
+    if (loading) {
+        return <p>Loading...</p>;
+    }
+    if (error) {
+        return <p>Error: {error}</p>;
+    }
 
    if(location.pathname === '/library'){
      return (
     <div className='main'>
-        <Navbar/>
+        <Navbar onSearch={setSearchTerm} value={searchTerm}/>
 
          <div className= "row">
                 <div className= "left">
